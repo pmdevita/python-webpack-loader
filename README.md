@@ -18,8 +18,8 @@ Right now, I have just patched this to get it working with modern Transcrypt. It
 
 ```bash
 pip install transcrypt  # or jiphy, or javascripthon
-npm i pmdevita/python-webpack-loader
-
+npm i -D pmdevita/python-webpack-loader
+optional: npm i -D source-map-loader
 normal way when fixes are merged: npm install --save-dev py-loader
 ```
 
