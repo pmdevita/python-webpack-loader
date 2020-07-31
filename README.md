@@ -18,7 +18,9 @@ Right now, I have just patched this to get it working with modern Transcrypt. It
 
 ```bash
 pip install transcrypt  # or jiphy, or javascripthon
-npm install --save-dev py-loader
+npm i pmdevita/python-webpack-loader
+
+normal way when fixes are merged: npm install --save-dev py-loader
 ```
 
 You may specify `jiphy` instead of `transcrypt` if you prefer. In this case, ensure that `options.compiler` in `webpack.config.js` is set to `jiphy` (see below). The compiler option for Javascripthon is `pj`.
