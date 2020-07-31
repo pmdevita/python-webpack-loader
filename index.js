@@ -45,16 +45,18 @@ module.exports = function (source) {
     let pythonLocation = "python";
     if (options.venv) {
         if (process.platform == "win32") {
-            pythonLocation = path.resolve(options.venv) + `${slash}Scripts${slash}python.exe`;
+            pythonLocation =  `${path.resolve(options.venv)}${slash}Scripts${slash}python.exe -m `;
         } else {
-            pythonLocation = path.resolve(options.venv) + `${slash}bin${slash}python.exe`;
+            pythonLocation = `${path.resolve(options.venv)}${slash}bin${slash}python.exe -m `;
         }
+    } else if (options.pipenv == true) {
+        pythonLocation = "python -m pipenv run "
     }
 
     if (!compiler) {
         throw new Error(`py-loader only supports ${
-                listify(Object.keys(compilers).map(properName))
-            } compilers at present. See README.md for information on using it with others.`);
+            listify(Object.keys(compilers).map(properName))
+        } compilers at present. See README.md for information on using it with others.`);
     }
 
     compiler.name = compilerName;
@@ -97,7 +99,7 @@ module.exports = function (source) {
         child.stdin.end();
     }
     else {
-        cmd.get(`${pythonLocation} -m ${compiler.name} ${compiler.switches} ${srcDir}${slash}${basename}.py`, function(err, data, stderr) {
+        cmd.get(`${pythonLocation} ${compiler.name} ${compiler.switches} ${srcDir}${slash}${basename}.py`, function(err, data, stderr) {
 
             if (!entry.toLowerCase().endsWith(".py")) {
                 console.warn("This loader only handles .py files. This could be a problem with your webpack.config.js file. Please add a rule for .py files in your modules entry.");

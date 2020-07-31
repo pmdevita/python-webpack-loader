@@ -51,7 +51,8 @@ module.exports = {
                         loader: 'py-loader',
                         options: {
                             compiler: 'transcrypt',
-                            venv: "./venv" // Optional path to virtual environment to use for compilation
+                            venv: "./venv", // Optional path to virtual environment to use for compilation
+                            pipenv: true    // Optional bool to use pipenv
                         }
                     }
                 ]
