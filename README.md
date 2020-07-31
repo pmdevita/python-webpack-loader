@@ -6,10 +6,12 @@
     <img width="200" height="200" hspace="20"
       src="https://webpack.js.org/assets/icon-square-big.svg">
   </a>
-  <h1>Python Webpack Loader</h1>
+  <h1>Python Webpack Loader - Hacky Python Discord Code Jam Edition</h1>
 </div>
 
-Loads Python files and transpile to JavaScript using the awesome [Transcrypt](http://www.transcrypt.org/), [Jiphy](https://github.com/timothycrosley/jiphy) or [Javascripthon](https://github.com/metapensiero/metapensiero.pj) compilers.
+Loads Python files and transpile to JavaScript using the awesome [Transcrypt](http://www.transcrypt.org/), ~~[Jiphy](https://github.com/timothycrosley/jiphy) or [Javascripthon](https://github.com/metapensiero/metapensiero.pj) compilers~~.
+
+Right now, I have just patched this to get it working with modern Transcrypt. It only supports Transcrypt but I'm open to pull requests.
 
 
 ## Install
@@ -23,8 +25,9 @@ You may specify `jiphy` instead of `transcrypt` if you prefer. In this case, ens
 
 ## Usage
 
-```js
-import Something from 'main.py';
+**src/main.py**
+```py
+print("hello world")
 ```
 
 ### Configuration
@@ -32,18 +35,33 @@ import Something from 'main.py';
 **webpack.config.js**
 ```js
 module.exports = {
-  module: {
-    rules: [
-      {
-        test: /\.py$/,
-        loader: 'py-loader',
-        options: {
-          compiler: 'transcrypt'
-        }
-      }
-    ]
-  }
-}
+    entry: ['./src/main.py'],
+    output: {
+        path: path.resolve(__dirname, 'dist'),
+        filename: 'bundle.js'
+    },
+    module: {
+        rules: [
+            {
+                test: /\.py$/,
+                use: [
+                    {
+                        loader: 'py-loader',
+                        options: {
+                            compiler: 'transcrypt',
+                            venv: "./venv" // Optional path to virtual environment to use for compilation
+                        }
+                    }
+                ]
+            },
+            {
+                test: /\.js$/,
+                enforce: 'pre',             // After the python is converted to JS, it loads through the JS loader
+                use: ['source-map-loader'], // Do this to get your sourcemaps (kinda) working
+            }
+        ]
+    }
+};
 ```
 
 ### VueJS support
@@ -61,7 +79,7 @@ An example of a simple VueJS app written in (mostly) Python can be seen in the `
 ***Caveats***
 * Only tested with Transcrypt
 * The import statement for loading sub-components still looks a bit weird
-* Web-pack entry point is still a javascript file
+* ~~Web-pack entry point is still a javascript file~~ Not anymore
 
 ## Extend
 
