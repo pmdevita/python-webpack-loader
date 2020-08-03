@@ -45,12 +45,12 @@ module.exports = function (source) {
     let pythonLocation = "python";
     if (options.venv) {
         if (process.platform == "win32") {
-            pythonLocation =  `${path.resolve(options.venv)}${slash}Scripts${slash}python.exe -m `;
+            pythonLocation =  `${path.resolve(options.venv)}${slash}Scripts${slash}python.exe -m`;
         } else {
-            pythonLocation = `${path.resolve(options.venv)}${slash}bin${slash}python.exe -m `;
+            pythonLocation = `${path.resolve(options.venv)}${slash}bin${slash}python.exe -m`;
         }
     } else if (options.pipenv == true) {
-        pythonLocation = "python -m pipenv run "
+        pythonLocation = "python -m pipenv run"
     }
 
     if (!compiler) {
@@ -126,6 +126,7 @@ module.exports = function (source) {
             else {
                 console.error(`Some error occurred on ${properName(compiler.name)} compiler execution. Have you installed ${properName(compiler.name)}? If not, please run \`${compiler.install}\` (requires Python ${compiler.python_version})`);
                 callback(err);
+                console.error(stderr);
             }
 
         });
