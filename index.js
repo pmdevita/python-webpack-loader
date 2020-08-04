@@ -92,7 +92,6 @@ module.exports = function (source) {
 
     if (hasImportlab) {
         let files = JSON.parse(execSync(`${pythonLocation} ${importlabScript} ${entry}`, {'cwd': srcDir}));
-        console.log(files);
         for (let i of files) {
             this.addDependency(i);
         }
