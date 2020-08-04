@@ -74,8 +74,8 @@ module.exports = function (source) {
             pythonLocation = `${venvLocation}${slash}Scripts${slash}python.exe`;
             runPyScriptCommand = `${venvLocation}${slash}Scripts${slash}python.exe -m`;
         } else {
-            pythonLocation = `${venvLocation}${slash}bin${slash}python.exe`;
-            runPyScriptCommand = `${venvLocation}${slash}bin${slash}python.exe -m`;
+            pythonLocation = `${venvLocation}${slash}bin${slash}python`;
+            runPyScriptCommand = `${venvLocation}${slash}bin${slash}python -m`;
         }
     }
 
