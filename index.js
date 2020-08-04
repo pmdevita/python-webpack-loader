@@ -1,4 +1,5 @@
 const cmd = require('node-cmd')
+const execSync = require('child_process').execSync;
 const fs = require('fs');
 const { sep: slash } = require('path');
 const path = require('path');
@@ -10,6 +11,11 @@ const properName = name => name.replace(/^./, c => c.toUpperCase());
 const listify = array => array.join(', ')
     // make a comma-separated list ending with a '&' separator
     .replace(/(, )[^,]*$/, s => ' & ' + s.split(', ')[1]);
+
+let checkedImportlab = false;
+let hasImportlab = false;
+let pipenvLocation = null;
+const importlabScript = `${__dirname}${slash}importlab_tree.py`
 
 module.exports = function (source) {
 
@@ -41,16 +47,55 @@ module.exports = function (source) {
     const options = loaderUtils.getOptions(this);
     const compilerName = options && options.compiler || 'transcrypt';
     const compiler = compilers[compilerName];
+    compiler.name = compilerName;
+    const entry = this._module.resource;
+    //console.log(`py-loader: compiling ${entry} with ${compilerName}...`);
+    const basename = path.basename(entry, ".py");
+    const srcDir = path.dirname(entry, ".py");
 
     let pythonLocation = "python";
-    if (options.venv) {
-        if (process.platform == "win32") {
-            pythonLocation =  `${path.resolve(options.venv)}${slash}Scripts${slash}python.exe -m`;
-        } else {
-            pythonLocation = `${path.resolve(options.venv)}${slash}bin${slash}python.exe -m`;
+    let runPyScriptCommand = "python -m"
+    if (options.pipenv != null) {
+        if (pipenvLocation == null) {
+            let location = execSync("pipenv --venv", {'cwd': options.pipenv}).toString()
+            if (location.substring(0, 46) != "No virtualenv has been created for this project") {
+                pipenvLocation = location.trim()
+            }
         }
-    } else if (options.pipenv == true) {
-        pythonLocation = "python -m pipenv run"
+    }
+
+    if (options.venv || options.pipenv) {
+        if (options.pipenv) {
+            venvLocation = pipenvLocation;
+        } else {
+            let venvLocation = path.resolve(options.venv);
+        }
+        if (process.platform == "win32") {
+            pythonLocation = `${venvLocation}${slash}Scripts${slash}python.exe`;
+            runPyScriptCommand = `${venvLocation}${slash}Scripts${slash}python.exe -m`;
+        } else {
+            pythonLocation = `${venvLocation}${slash}bin${slash}python.exe`;
+            runPyScriptCommand = `${venvLocation}${slash}bin${slash}python.exe -m`;
+        }
+    }
+
+    if (!checkedImportlab) {
+        let modules = JSON.parse(execSync(`${runPyScriptCommand} pip list --format json`));
+        for (let i of modules) {
+            if (i['name'] == "importlab") {
+                hasImportlab = true;
+                break;
+            }
+        }
+        checkedImportlab = true;
+    }
+
+    if (hasImportlab) {
+        let files = JSON.parse(execSync(`${pythonLocation} ${importlabScript} ${entry}`, {'cwd': srcDir}));
+        console.log(files);
+        for (let i of files) {
+            this.addDependency(i);
+        }
     }
 
     if (!compiler) {
@@ -59,12 +104,9 @@ module.exports = function (source) {
         } compilers at present. See README.md for information on using it with others.`);
     }
 
-    compiler.name = compilerName;
-    const entry = this._module.resource;
-    //console.log(`py-loader: compiling ${entry} with ${compilerName}...`);
 
-    const basename = path.basename(entry, ".py");
-    const srcDir = path.dirname(entry, ".py");
+
+
 
     const callback = this.async();
 
@@ -99,7 +141,7 @@ module.exports = function (source) {
         child.stdin.end();
     }
     else {
-        cmd.get(`${pythonLocation} ${compiler.name} ${compiler.switches} ${srcDir}${slash}${basename}.py`, function(err, data, stderr) {
+        cmd.get(`${runPyScriptCommand} ${compiler.name} ${compiler.switches} ${srcDir}${slash}${basename}.py`, function(err, data, stderr) {
 
             if (!entry.toLowerCase().endsWith(".py")) {
                 console.warn("This loader only handles .py files. This could be a problem with your webpack.config.js file. Please add a rule for .py files in your modules entry.");
@@ -124,9 +166,10 @@ module.exports = function (source) {
 
             }
             else {
-                console.error(`Some error occurred on ${properName(compiler.name)} compiler execution. Have you installed ${properName(compiler.name)}? If not, please run \`${compiler.install}\` (requires Python ${compiler.python_version})`);
+                // console.error(`Some error occurred on ${properName(compiler.name)} compiler execution. Have you installed ${properName(compiler.name)}? If not, please run \`${compiler.install}\` (requires Python ${compiler.python_version})`);
                 callback(err);
-                console.error(stderr);
+                console.error(data);
+                // console.error(stderr);
             }
 
         });

@@ -50,9 +50,9 @@ module.exports = {
                     {
                         loader: 'py-loader',
                         options: {
-                            compiler: 'transcrypt',
-                            venv: "./venv", // Optional path to virtual environment to use for compilation
-                            pipenv: true    // Optional bool to use pipenv
+                            compiler: 'transcrypt', // Do not use both venv and pipenv at the same time
+                            venv: "./venv", // Path to venv
+                            pipenv: path.resolve(__dirname, 'path', 'from', 'webpackconfig')    // Path to pipenv folder
                         }
                     }
                 ]
